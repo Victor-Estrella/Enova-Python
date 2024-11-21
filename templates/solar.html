@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Energia Solar</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0 auto;
+            max-width: 900px;
+            padding: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .relatorio {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .relatorio h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Análise de Energia Solar</h1>
+
+    <h2>Produção de Energia Solar</h2>
+    <canvas id="graficoProducao" width="800" height="400"></canvas>
+
+    <h2>Consumo de Energia</h2>
+    <canvas id="graficoConsumo" width="800" height="400"></canvas>
+
+    <h2>Eficiência do Sistema Solar</h2>
+    <canvas id="graficoEficiencia" width="800" height="400"></canvas>
+
+    <div class="relatorio">
+        <h3>Relatório Explicativo</h3>
+        <p id="relatorioProducao"></p>
+        <p id="relatorioConsumo"></p>
+        <p id="relatorioEficiencia"></p>
+    </div>
+
+    <script>
+        // Dados fictícios para simulação
+        const dados = {
+            datas: ["2024-11-01", "2024-11-02", "2024-11-03", "2024-11-04", "2024-11-05"],
+            producoes: [120, 130, 125, 140, 150],
+            consumos: [100, 110, 105, 115, 120],
+            eficiencia: [80, 85, 83, 88, 90]
+        };
+
+        // Função para gerar descrições automáticas
+        function gerarRelatorio(dados) {
+            const totalProducao = dados.producoes.reduce((a, b) => a + b, 0);
+            const totalConsumo = dados.consumos.reduce((a, b) => a + b, 0);
+            const mediaEficiencia = (dados.eficiencia.reduce((a, b) => a + b, 0) / dados.eficiencia.length).toFixed(2);
+
+            return {
+                producao: `A produção total de energia solar no período foi de ${totalProducao} kWh, com um aumento gradual, atingindo o pico de ${Math.max(...dados.producoes)} kWh em ${dados.datas[dados.producoes.indexOf(Math.max(...dados.producoes))]}.`,
+                consumo: `O consumo total de energia no mesmo período foi de ${totalConsumo} kWh. Observa-se que o consumo é consistentemente menor que a produção, garantindo um excedente energético.`,
+                eficiencia: `A eficiência média do sistema solar foi de ${mediaEficiencia}%, com uma melhoria ao longo do período, alcançando o valor máximo de ${Math.max(...dados.eficiencia)}% em ${dados.datas[dados.eficiencia.indexOf(Math.max(...dados.eficiencia))]}.`
+            };
+        }
+
+        const relatorio = gerarRelatorio(dados);
+
+        // Adiciona o texto do relatório aos elementos HTML
+        document.getElementById('relatorioProducao').textContent = relatorio.producao;
+        document.getElementById('relatorioConsumo').textContent = relatorio.consumo;
+        document.getElementById('relatorioEficiencia').textContent = relatorio.eficiencia;
+
+        // Gráficos
+        const ctxProducao = document.getElementById('graficoProducao').getContext('2d');
+        new Chart(ctxProducao, {
+            type: 'line',
+            data: {
+                labels: dados.datas,
+                datasets: [{
+                    label: 'Produção Solar (kWh)',
+                    data: dados.producoes,
+                    borderColor: 'green',
+                    backgroundColor: 'rgba(0, 128, 0, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Data' }},
+                    y: { title: { display: true, text: 'Produção (kWh)' }},
+                }
+            }
+        });
+
+        const ctxConsumo = document.getElementById('graficoConsumo').getContext('2d');
+        new Chart(ctxConsumo, {
+            type: 'line',
+            data: {
+                labels: dados.datas,
+                datasets: [{
+                    label: 'Consumo de Energia (kWh)',
+                    data: dados.consumos,
+                    borderColor: 'red',
+                    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Data' }},
+                    y: { title: { display: true, text: 'Consumo (kWh)' }},
+                }
+            }
+        });
+
+        const ctxEficiencia = document.getElementById('graficoEficiencia').getContext('2d');
+        new Chart(ctxEficiencia, {
+            type: 'line',
+            data: {
+                labels: dados.datas,
+                datasets: [{
+                    label: 'Eficiência (%)',
+                    data: dados.eficiencia,
+                    borderColor: 'blue',
+                    backgroundColor: 'rgba(0, 0, 255, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Data' }},
+                    y: { title: { display: true, text: 'Eficiência (%)' }},
+                }
+            }
+        });
+    </script>
+</body>
+</html>

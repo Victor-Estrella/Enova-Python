@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Manutenção</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0 auto;
+            max-width: 900px;
+            padding: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .relatorio {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .relatorio h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Análise de Manutenção</h1>
+
+    <h2>Manutenções Realizadas</h2>
+    <canvas id="graficoManutencoes" width="800" height="400"></canvas>
+
+    <h2>Custo Total de Manutenção</h2>
+    <canvas id="graficoCusto" width="800" height="400"></canvas>
+
+    <h2>Frequência de Manutenção</h2>
+    <canvas id="graficoFrequencia" width="800" height="400"></canvas>
+
+    <div class="relatorio">
+        <h3>Relatório Explicativo</h3>
+        <p id="relatorioManutencoes"></p>
+        <p id="relatorioCusto"></p>
+        <p id="relatorioFrequencia"></p>
+    </div>
+
+    <script>
+        // Dados fictícios para simulação
+        const dados = {
+            datas: ["2024-01", "2024-02", "2024-03", "2024-04", "2024-05"],
+            manutencoes: [10, 12, 8, 15, 13],
+            custos: [1500, 1800, 1200, 2000, 1700],
+            frequencias: [2, 3, 2, 4, 3]
+        };
+
+        // Função para gerar descrições automáticas
+        function gerarRelatorio(dados) {
+            const totalManutencoes = dados.manutencoes.reduce((a, b) => a + b, 0);
+            const custoTotal = dados.custos.reduce((a, b) => a + b, 0);
+            const frequenciaMedia = (dados.frequencias.reduce((a, b) => a + b, 0) / dados.frequencias.length).toFixed(2);
+
+            return {
+                manutencoes: `Um total de ${totalManutencoes} manutenções foram realizadas no período, com o maior número (${Math.max(...dados.manutencoes)}) em ${dados.datas[dados.manutencoes.indexOf(Math.max(...dados.manutencoes))]}.`,
+                custo: `O custo total de manutenção foi de R$ ${custoTotal.toLocaleString()}, com o maior gasto de R$ ${Math.max(...dados.custos).toLocaleString()} em ${dados.datas[dados.custos.indexOf(Math.max(...dados.custos))]}.`,
+                frequencia: `A frequência média de manutenções foi de ${frequenciaMedia} por mês, com o pico de ${Math.max(...dados.frequencias)} manutenções/mês em ${dados.datas[dados.frequencias.indexOf(Math.max(...dados.frequencias))]}.`
+            };
+        }
+
+        const relatorio = gerarRelatorio(dados);
+
+        // Adiciona o texto do relatório aos elementos HTML
+        document.getElementById('relatorioManutencoes').textContent = relatorio.manutencoes;
+        document.getElementById('relatorioCusto').textContent = relatorio.custo;
+        document.getElementById('relatorioFrequencia').textContent = relatorio.frequencia;
+
+        // Gráficos
+        const ctxManutencoes = document.getElementById('graficoManutencoes').getContext('2d');
+        new Chart(ctxManutencoes, {
+            type: 'bar',
+            data: {
+                labels: dados.datas,
+                datasets: [{
+                    label: 'Manutenções Realizadas',
+                    data: dados.manutencoes,
+                    backgroundColor: 'rgba(0, 123, 255, 0.7)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Período' }},
+                    y: { title: { display: true, text: 'Quantidade' }},
+                }
+            }
+        });
+
+        const ctxCusto = document.getElementById('graficoCusto').getContext('2d');
+        new Chart(ctxCusto, {
+            type: 'line',
+            data: {
+                labels: dados.datas,
+                datasets: [{
+                    label: 'Custo de Manutenção (R$)',
+                    data: dados.custos,
+                    borderColor: 'green',
+                    backgroundColor: 'rgba(0, 128, 0, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Período' }},
+                    y: { title: { display: true, text: 'Custo (R$)' }},
+                }
+            }
+        });
+
+        const ctxFrequencia = document.getElementById('graficoFrequencia').getContext('2d');
+        new Chart(ctxFrequencia, {
+            type: 'line',
+            data: {
+                labels: dados.datas,
+                datasets: [{
+                    label: 'Frequência de Manutenção',
+                    data: dados.frequencias,
+                    borderColor: 'red',
+                    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Período' }},
+                    y: { title: { display: true, text: 'Frequência (manutenções/mês)' }},
+                }
+            }
+        });
+    </script>
+</body>
+</html>
