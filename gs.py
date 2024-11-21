@@ -1,3 +1,14 @@
+'''
+Turma: 1TDSPH
+
+Integrantes:
+
+Leticia Cristina dos Santos Passos, rm: 555241
+André Rogério Vieira Pavanela Altobelli Antunes, rm: 554764
+Victor Henrique Estrella Carracci RM:556206
+
+'''
+
 #-----------------------Imports-----------------------#
 import oracledb
 import pandas as pd
