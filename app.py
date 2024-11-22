@@ -47,8 +47,12 @@ def eolica():
     fim = datetime(2024, 1, 1)
     dados = gerar_dados_simulados(n, inicio, fim)
 
-    # Passa os dados para o template
-    return render_template('eolica.html', dados=dados)
+    # Para ver os gráficos no python
+    # return render_template('eolica.html', dados=dados)
+
+    # Passa os dados para o template do front end
+    return jsonify(dados)
+
 
 #Rota principal que exibe o gráfico.
 @app.route('/solar')
@@ -59,9 +63,11 @@ def solar():
     fim = datetime(2024, 1, 1)
     dados = gerar_dados_simulados(n, inicio, fim)
 
-    # Passa os dados para o template
-    return jsonify(dados)
+    # Para ver os gráficos no python
+    # return render_template('solar.html', dados=dados)
 
+    #Passa os dados para o template do front end
+    return jsonify(dados)
 
 #Rota principal que exibe o gráfico.
 @app.route('/manutencao')
@@ -72,8 +78,11 @@ def manutencao():
     fim = datetime(2024, 1, 1)
     dados = gerar_dados_simulados(n, inicio, fim)
 
-    # Passa os dados para o template
-    return render_template('manutencao.html', dados=dados)
+    # Para ver os gráficos no python
+    # return render_template('manutencao.html', dados=dados)
+
+    # Passa os dados para o template do front end
+    return jsonify(dados)
 
 #Rota para retornar os dados em formato JSON.
 @app.route('/')
