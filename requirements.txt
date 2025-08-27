@@ -1,6 +1,7 @@
-flask
-flask-cors
-oracledb
+pandas
+numpy
+matplotlib
+mysql-connector-python
 pandas
 numpy
 matplotlib

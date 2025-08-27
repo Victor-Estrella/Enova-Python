@@ -10,7 +10,8 @@ Victor Henrique Estrella Carracci RM:556206
 '''
 
 #-----------------------Imports-----------------------#
-import oracledb
+import mysql.connector
+import os
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -21,8 +22,14 @@ import matplotlib.dates as mdates
 
 #Esta função estabelece conexão com o banco de dados.
 def get_connection():
-    connection = oracledb.connect('rm554764/030206@oracle.fiap.com.br:1521/orcl')
-    print('Conectado com sucesso:', connection.version)
+    connection = mysql.connector.connect(
+        host=os.environ.get('DB_HOST', 'localhost'),
+        port=int(os.environ.get('DB_PORT', 3306)),
+        user=os.environ.get('DB_USER', 'root'),
+        password=os.environ.get('DB_PASSWORD', ''),
+        database=os.environ.get('DB_NAME', 'enova_db')
+    )
+    print('Conectado com sucesso:', connection)
     return connection
 
 #Esta função gera uma lista de datas aleatórias dentro de um intervalo.
@@ -72,7 +79,7 @@ def inserir_dados(connection, df, tabela):
                 INSERT INTO {tabela} (
                     dt_analise, nr_producao_energia, nr_consumo_energia, nr_eficiencia
                 ) VALUES (
-                    TO_DATE(:1, 'YYYY-MM-DD'), :2, :3, :4
+                    %s, %s, %s, %s
                 )
             """, (
                 row['dt_analise'].strftime('%Y-%m-%d'),
@@ -82,7 +89,7 @@ def inserir_dados(connection, df, tabela):
             ))
         connection.commit()
         print(f"Dados inseridos com sucesso na tabela {tabela}!")
-    except oracledb.DatabaseError as e:
+    except mysql.connector.Error as e:
         print("Erro ao inserir dados no banco de dados:", e)
     finally:
         if cursor:
@@ -156,7 +163,7 @@ def consultar_analise_por_id(connection, id_analise, caminho='analise_por_id.jso
         cursor.execute("""
             SELECT dt_analise, nr_producao_energia, nr_consumo_energia, nr_eficiencia
             FROM t_enova_analise_eficiencia
-            WHERE id_analise = :1
+            WHERE id_analise = %s
         """, (id_analise,))
         resultado = cursor.fetchone()
         if resultado:
@@ -165,7 +172,7 @@ def consultar_analise_por_id(connection, id_analise, caminho='analise_por_id.jso
             print(f"Análise exportada para {caminho}.")
         else:
             print("Nenhuma análise encontrada com esse ID.")
-    except oracledb.DatabaseError as e:
+    except mysql.connector.Error as e:
         print(f"Erro ao consultar análise: {e}")
     finally:
         if cursor:
@@ -178,7 +185,7 @@ def consultar_eficiencia_abaixo(connection, valor_limite, caminho='eficiencia_ab
         cursor.execute("""
             SELECT dt_analise, nr_producao_energia, nr_consumo_energia, nr_eficiencia
             FROM t_enova_analise_eficiencia
-            WHERE nr_eficiencia < :1
+            WHERE nr_eficiencia < %s
             ORDER BY nr_eficiencia ASC
         """, (valor_limite,))
         resultados = cursor.fetchall()
@@ -188,7 +195,7 @@ def consultar_eficiencia_abaixo(connection, valor_limite, caminho='eficiencia_ab
             print(f"Análises exportadas para {caminho}.")
         else:
             print(f"Nenhuma análise encontrada com eficiência abaixo de {valor_limite}%.")
-    except oracledb.DatabaseError as e:
+    except mysql.connector.Error as e:
         print(f"Erro ao consultar análises: {e}")
     finally:
         if cursor:
@@ -201,7 +208,7 @@ def consultar_analises_por_intervalo(connection, data_inicio, data_fim, caminho=
         cursor.execute("""
             SELECT dt_analise, nr_producao_energia, nr_consumo_energia, nr_eficiencia
             FROM t_enova_analise_eficiencia
-            WHERE dt_analise BETWEEN TO_DATE(:1, 'YYYY-MM-DD') AND TO_DATE(:2, 'YYYY-MM-DD')
+            WHERE dt_analise BETWEEN %s AND %s
             ORDER BY dt_analise
         """, (data_inicio, data_fim))
         resultados = cursor.fetchall()
@@ -211,7 +218,7 @@ def consultar_analises_por_intervalo(connection, data_inicio, data_fim, caminho=
             print(f"Análises exportadas para {caminho}.")
         else:
             print(f"Nenhuma análise encontrada entre {data_inicio} e {data_fim}.")
-    except oracledb.DatabaseError as e:
+    except mysql.connector.Error as e:
         print(f"Erro ao consultar análises: {e}")
     finally:
         if cursor:
@@ -223,14 +230,14 @@ def atualizar_analise(connection, id_analise, producao, consumo, eficiencia):
         cursor = connection.cursor()
         cursor.execute("""
             UPDATE t_enova_analise_eficiencia
-            SET nr_producao_energia = :1,
-                nr_consumo_energia = :2,
-                nr_eficiencia = :3
-            WHERE id_analise = :4
+            SET nr_producao_energia = %s,
+                nr_consumo_energia = %s,
+                nr_eficiencia = %s
+            WHERE id_analise = %s
         """, (producao, consumo, eficiencia, id_analise))
         connection.commit()
         print(f"Análise com ID {id_analise} atualizada com sucesso.")
-    except oracledb.DatabaseError as e:
+    except mysql.connector.Error as e:
         print(f"Erro ao atualizar análise: {e}")
     finally:
         if cursor:
@@ -242,11 +249,11 @@ def deletar_analise(connection, id_analise):
         cursor = connection.cursor()
         cursor.execute("""
             DELETE FROM t_enova_analise_eficiencia
-            WHERE id_analise = :1
+            WHERE id_analise = %s
         """, (id_analise,))
         connection.commit()
         print(f"Análise com ID {id_analise} deletada com sucesso.")
-    except oracledb.DatabaseError as e:
+    except mysql.connector.Error as e:
         print(f"Erro ao deletar análise: {e}")
     finally:
         if cursor:
@@ -260,12 +267,12 @@ def inserir_analise_manual(connection, data, producao, consumo, eficiencia):
             INSERT INTO t_enova_analise_eficiencia (
                 dt_analise, nr_producao_energia, nr_consumo_energia, nr_eficiencia
             ) VALUES (
-                TO_DATE(:1, 'YYYY-MM-DD'), :2, :3, :4
+                %s, %s, %s, %s
             )
         """, (data, producao, consumo, eficiencia))
         connection.commit()
         print("Análise inserida com sucesso.")
-    except oracledb.DatabaseError as e:
+    except mysql.connector.Error as e:
         print(f"Erro ao inserir análise manualmente: {e}")
     finally:
         if cursor:
